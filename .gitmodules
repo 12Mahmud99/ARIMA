@@ -1,0 +1,3 @@
+[submodule "external/api_repo"]
+	path = external/api_repo
+	url = https://github.com/12Mahmud99/synthetic_data_generator
