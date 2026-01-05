@@ -1,4 +1,3 @@
-import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import statsmodels 
@@ -7,42 +6,39 @@ import torch
 import matplotlib.pyplot as plt
 import pandas as pd
 
-import matplotlib.pyplot as plt
-import pandas as pd
-
 def plot_arima_simulated_forecast(series, result, t, steps=None, n_sim=1, show_ground_truth=True):
     if steps is None:
         steps = len(series) - t
 
-    train = series.iloc[:t]
+    #train = series.iloc[:t]
     test = series.iloc[t:t+steps]
 
-    # Forecast mean + CI
     forecast_res = result.get_forecast(steps=steps)
     ci = forecast_res.conf_int()
     ci.index = test.index
 
-    # Simulated paths
+    last_value = series.iloc[t-1]
+
     sims = []
+
     for _ in range(n_sim):
-        sim = result.simulate(nsimulations=steps)
+        sim = result.simulate(
+            nsimulations=steps,
+            anchor="end"
+        )
         sim.index = test.index
         sims.append(sim)
 
-    plt.figure(figsize=(12, 6))
 
-    # Full trajectory
+    plt.figure(figsize=(12, 6))
     plt.plot(series.index, series, color="black", label="Full series")
 
-    # Optional: overlay ground truth separately for clarity
     if show_ground_truth:
         plt.plot(test.index, test, color="blue", label="Ground truth")
 
-    # Simulated forecast paths
     for sim in sims:
         plt.plot(sim.index, sim, color="orange", alpha=0.5, label="Simulated path" if n_sim == 1 else None)
 
-    # Confidence interval overlay
     plt.fill_between(ci.index, ci.iloc[:, 0], ci.iloc[:, 1], color="red", alpha=0.2, label="Confidence interval")
 
     plt.xlabel("Time")
