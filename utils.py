@@ -1,11 +1,10 @@
 import numpy as np
 import matplotlib.pyplot as plt
-import statsmodels 
 import torch
-
+from scipy.stats import norm
 import matplotlib.pyplot as plt
 import pandas as pd
-
+import properscoring
 
 def MAE(series, t, forecast_res, steps=None):
     if steps is None:
@@ -18,6 +17,19 @@ def MAE(series, t, forecast_res, steps=None):
 
     mae = np.mean(np.abs(test - forecast))
     return mae
+
+def CRPS(result, test_values, n_sim=100, steps=None):
+    if steps is None:
+        steps = len(test_values)
+    y_true = np.array(test_values)[:steps]
+    sims = []
+    for _ in range(n_sim):
+        sim = result.simulate(nsimulations=steps, anchor="end")
+        sim_arr = np.array(sim)  # convert Series/DataFrame to np array
+        sim_arr = sim_arr.ravel() # flatten to 1D
+        sims.append(sim_arr)
+    future_samples = np.stack(sims, axis=0)  # shape (n_sim, steps)
+    return np.mean(properscoring.crps_ensemble(y_true, forecasts=future_samples, axis=0))
 
 def plot_arima_simulated_forecast(series, result, t, steps=None, n_sim=1,plot_mean=False, show_ground_truth=True, alpha=0.05):
     if steps is None:
@@ -62,7 +74,7 @@ def plot_arima_simulated_forecast(series, result, t, steps=None, n_sim=1,plot_me
 
     plt.xlabel("Time (steps)")
     plt.ylabel("Value")
-    plt.title(f'ARIMA/SARIMAX Forecast Overlay on Full Series, MAE:{MAE(series, t, forecast_res, steps=steps):.4f}')
+    plt.title(f'ARIMA/SARIMAX Forecast Overlay on Full Series, MAE:{MAE(series, t, forecast_res, steps=steps):.4f}, CRPS:{CRPS(result, test_values=test, steps=steps):.4f}')
 
     plt.legend()
     plt.tight_layout()
