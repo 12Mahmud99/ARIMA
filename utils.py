@@ -74,7 +74,7 @@ def plot_arima_simulated_forecast(series, result, t, steps=None, n_sim=1,plot_me
 
     plt.xlabel("Time (steps)")
     plt.ylabel("Value")
-    plt.title(f'ARIMA/SARIMAX Forecast Overlay on Full Series, MAE:{MAE(series, t, forecast_res, steps=steps):.4f}, CRPS:{CRPS(result, test_values=test, steps=steps):.4f}')
+    plt.title(f'ARIMA/SARIMAX Forecast, MAE:{MAE(series, t, forecast_res, steps=steps):.4f}, CRPS:{CRPS(result, test_values=test, steps=steps):.4f}')
 
     plt.legend()
     plt.tight_layout()
