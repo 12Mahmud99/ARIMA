@@ -43,6 +43,7 @@ def plot_arima_simulated_forecast(series, result, t, steps=None, n_sim=1,plot_me
         sims.append(sim)
 
 
+
     plt.figure(figsize=(12, 6))
     plt.plot(series.index, series, color="black", label="Full series")
 
@@ -59,7 +60,7 @@ def plot_arima_simulated_forecast(series, result, t, steps=None, n_sim=1,plot_me
 
     plt.fill_between(ci.index, ci.iloc[:, 0], ci.iloc[:, 1], color="red", alpha=0.2, label=f'{100*(1-alpha)}% Confidence interval')
 
-    plt.xlabel("Time")
+    plt.xlabel("Time (steps)")
     plt.ylabel("Value")
     plt.title(f'ARIMA/SARIMAX Forecast Overlay on Full Series, MAE:{MAE(series, t, forecast_res, steps=steps):.4f}')
 
