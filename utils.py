@@ -6,18 +6,31 @@ import torch
 import matplotlib.pyplot as plt
 import pandas as pd
 
-def plot_arima_simulated_forecast(series, result, t, steps=None, n_sim=1, show_ground_truth=True):
+
+def MAE(series, t, forecast_res, steps=None):
+    if steps is None:
+        steps = len(series) - t
+
+    test = series.iloc[t:t + steps]
+
+    forecast = forecast_res.predicted_mean
+    forecast.index = test.index  
+
+    mae = np.mean(np.abs(test - forecast))
+    return mae
+
+def plot_arima_simulated_forecast(series, result, t, steps=None, n_sim=1,plot_mean=False, show_ground_truth=True, alpha=0.05):
     if steps is None:
         steps = len(series) - t
 
     #train = series.iloc[:t]
-    test = series.iloc[t:t+steps]
+    test = series.iloc[t:t+steps] #how many into the future to forecast
 
     forecast_res = result.get_forecast(steps=steps)
-    ci = forecast_res.conf_int()
+    ci = forecast_res.conf_int(alpha=alpha)
     ci.index = test.index
 
-    last_value = series.iloc[t-1]
+    #last_value = series.iloc[t-1]
 
     sims = []
 
@@ -36,17 +49,29 @@ def plot_arima_simulated_forecast(series, result, t, steps=None, n_sim=1, show_g
     if show_ground_truth:
         plt.plot(test.index, test, color="blue", label="Ground truth")
 
+    if plot_mean:
+        forecast = forecast_res.predicted_mean
+        forecast.index = test.index  
+        plt.plot(forecast.index, forecast, color="red", label="ARIMA/SARIMAX forecast mean")
+
     for sim in sims:
         plt.plot(sim.index, sim, color="orange", alpha=0.5, label="Simulated path" if n_sim == 1 else None)
 
-    plt.fill_between(ci.index, ci.iloc[:, 0], ci.iloc[:, 1], color="red", alpha=0.2, label="Confidence interval")
+    plt.fill_between(ci.index, ci.iloc[:, 0], ci.iloc[:, 1], color="red", alpha=0.2, label=f'{100*(1-alpha)}% Confidence interval')
 
     plt.xlabel("Time")
     plt.ylabel("Value")
-    plt.title("ARIMA/SARIMAX Forecast Overlay on Full Series")
+    plt.title(f'ARIMA/SARIMAX Forecast Overlay on Full Series, MAE:{MAE(series, t, forecast_res, steps=steps):.4f}')
+
     plt.legend()
     plt.tight_layout()
     plt.show()
+
+
+#################################
+#################################
+#################################
+################################# deprecated below
 
 def plot_arima_forecast_mean(series, result, t, steps=None, conf_int=True):
     """
@@ -68,7 +93,7 @@ def plot_arima_forecast_mean(series, result, t, steps=None, conf_int=True):
     if steps is None:
         steps = len(series) - t
 
-    train = series.iloc[:t]
+    train = series.iloc[:t+1]
     test = series.iloc[t:t + steps]
 
     forecast_res = result.get_forecast(steps=steps)
@@ -79,8 +104,6 @@ def plot_arima_forecast_mean(series, result, t, steps=None, conf_int=True):
     ci.index = test.index
 
     plt.figure(figsize=(12, 6))
-
-    # Plot
     plt.plot(train.index, train, label="Training data", color="black")
     plt.plot(test.index, test, label="Ground truth", color="blue")
     plt.plot(forecast.index, forecast, label="ARIMA forecast mean", color="red")
