@@ -1,5 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
+from sklearn.metrics import mean_absolute_error
 import torch
 from scipy.stats import norm
 import matplotlib.pyplot as plt
@@ -17,6 +18,12 @@ def MAE(series, t, forecast_res, steps=None):
 
     mae = np.mean(np.abs(test - forecast))
     return mae
+
+def meanMAE(data, sims):
+    maes = [mean_absolute_error(data, sim) for sim in sims]    
+    mean_mae = np.mean(maes)
+    
+    return mean_mae
 
 def CRPS(result, test_values, n_sim=100, steps=None):
     if steps is None:
