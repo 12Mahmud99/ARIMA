@@ -7,7 +7,8 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import properscoring
 
-def MAE(series, t, forecast_res, steps=None):
+##dep
+'''def MAE(series, t, forecast_res, steps=None):
     if steps is None:
         steps = len(series) - t
 
@@ -17,7 +18,33 @@ def MAE(series, t, forecast_res, steps=None):
     forecast.index = test.index  
 
     mae = np.mean(np.abs(test - forecast))
-    return mae
+    return mae'''
+
+
+'''
+outpus the fraction of trajectories within a given confidence interval accross time
+'''
+def fractionMetric(trajectories, ci_lower,ci_upper):
+    '''
+    :trajectories: torch tensor of trajectories (2 dimensional, columns=step, rows=trajectory)
+    :ci_lower : confidence interval lower bound
+    :ci_upper : confidence interval upper
+    :xAxis: indices for plotting 
+    '''    
+    if not torch.is_tensor(ci_lower):
+        ci_lower = torch.tensor(ci_lower.values if hasattr(ci_lower, "values") else ci_lower)
+
+    if not torch.is_tensor(ci_upper):
+        ci_upper = torch.tensor(ci_upper.values if hasattr(ci_upper, "values") else ci_upper)
+    ci_lower = ci_lower.unsqueeze(0)
+    ci_upper = ci_upper.unsqueeze(0) 
+
+    inside = (trajectories >= ci_lower) & (trajectories <= ci_upper)
+
+    fraction = inside.float().mean(dim=0)
+
+    return fraction
+
 
 def meanMAE(data, sims):
     maes = [mean_absolute_error(data, sim) for sim in sims]    
